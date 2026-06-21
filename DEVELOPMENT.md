@@ -15,6 +15,7 @@
 - [如何修改工作流](#如何修改工作流)
 - [如何扩充数据模型](#如何扩充数据模型)
 - [药物知识库开发说明](#药物知识库开发说明)
+- [Redis 会话与报告存储](#redis-会话与报告存储)
 - [Agent 实现规范](#agent-实现规范)
 - [调试技巧](#调试技巧)
 - [常见坑](#常见坑)
@@ -392,6 +393,63 @@ python scripts/init_drug_mysql.py
 - 记录不存在：`404`
 - 药名冲突：`409`
 - MySQL 药物知识库不可用：`503`
+
+---
+
+## Redis 会话与报告存储
+
+当前多轮对话会话和已生成报告已迁移到 Redis，不再保存在 Python 进程内存中。
+
+### 相关文件
+
+- `medagent/storage/redis_client.py`：Redis 连接创建与缓存
+- `medagent/storage/chat_session_repository.py`：多轮对话会话读写
+- `medagent/storage/report_repository.py`：报告读写
+- `medagent/main.py`：HTTP 接口层接入 Redis 存储
+
+### 存储内容
+
+- `POST /api/chat` 使用 Redis 存储 `GraphState`
+- `POST /api/analyze` 和对话采集完成后的报告使用 Redis 存储结果字典
+- `POST /api/chat` 每轮回复后会独立执行一次 `PatientData` 结构化抽取与必填校验
+
+### Redis key 设计
+
+- `medagent:chat:{session_id}`
+- `medagent:report:{report_id}`
+
+### 序列化方式
+
+- 会话：`GraphState.model_dump(mode="json")` 后存为 JSON
+- 报告：分析结果字典直接序列化为 JSON
+- 读取时反序列化回 `GraphState` 或 `dict`
+
+### 多轮对话完成判定
+
+当前 chat 链路不再依赖助手在自然语言回复中主动输出 ```json。
+
+改为：
+
+1. 先生成正常对话回复
+2. 再基于完整 `chat_history` 单独抽取 `PatientData` 结构
+3. 用 `REQUIRED_FIELD_PATHS` 校验是否补齐必填字段
+4. 一旦 `intake_valid=True`，立即触发 `run_analysis()` 并生成报告
+
+### TTL 策略
+
+- `REDIS_CHAT_TTL_SECONDS`：默认 86400 秒
+- `REDIS_REPORT_TTL_SECONDS`：默认 86400 秒
+- 每次读取成功后刷新 TTL，保持活跃会话和最近查看的报告
+
+### 错误约定
+
+- Redis 未配置、依赖缺失或连接失败：接口返回 `503`
+
+### Docker 部署建议
+
+- 推荐通过环境变量传入 `REDIS_URL`
+- 在 Docker Compose 中可使用服务名，例如：
+  `redis://:password@redis:6379`
 
 ---
 

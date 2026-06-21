@@ -104,6 +104,12 @@ Deterministic Tools
 - `Qwen / DashScope OpenAI-compatible`
 - `Anthropic`
 
+状态存储：
+
+- 多轮对话会话存储在 Redis
+- 已生成报告存储在 Redis
+- 默认 TTL 为 24 小时，可通过环境变量调整
+
 ---
 
 ## 工作流
@@ -336,7 +342,23 @@ python scripts/init_drug_mysql.py
 
 如果不配置 MySQL，系统会自动回退到内置药物知识库。
 
-### 5. 运行项目
+### 5. 配置 Redis
+
+多轮对话会话和生成后的报告默认存储到 Redis。
+
+```bash
+REDIS_URL=redis://:qyn030113@localhost:6379
+REDIS_CHAT_TTL_SECONDS=86400
+REDIS_REPORT_TTL_SECONDS=86400
+```
+
+说明：
+
+- `REDIS_URL` 支持本机、Docker 或云 Redis
+- 默认 TTL 为 24 小时
+- 每次读取或更新会刷新 TTL
+
+### 6. 运行项目
 
 #### 方式一：CLI 演示
 
@@ -431,6 +453,12 @@ streamlit run medagent/frontend/app.py
 ### `GET /api/report/{report_id}`
 
 根据 `report_id` 获取已生成的报告。
+
+说明：
+
+- `/api/chat` 的多轮会话状态保存在 Redis
+- `/api/report/{report_id}` 读取的是 Redis 中缓存的报告
+- 如果 Redis 不可用，相关接口会返回 `503`
 
 ### `GET /api/schema`
 
@@ -576,6 +604,21 @@ MYSQL_POOL_RECYCLE=1800
 - 若 `MYSQL_DRUG_DB_ENABLED=false`，药物工具会直接跳过数据库层
 - 若 MySQL 连接失败，工具层会自动回退到内置药物知识库
 
+### Redis 配置
+
+```bash
+REDIS_URL=redis://:qyn030113@localhost:6379
+REDIS_CHAT_TTL_SECONDS=86400
+REDIS_REPORT_TTL_SECONDS=86400
+```
+
+说明：
+
+- `REDIS_URL` 为 Redis 连接串
+- `REDIS_CHAT_TTL_SECONDS` 控制多轮会话过期时间
+- `REDIS_REPORT_TTL_SECONDS` 控制报告缓存过期时间
+- 未来 Docker 部署时，可直接把 `REDIS_URL` 指向容器服务名
+
 ---
 
 ## 测试
@@ -612,7 +655,7 @@ python tests/test_drug_admin_api.py
 
 ## 已知限制
 
-1. 报告与对话会话当前保存在内存中，服务重启后会丢失。
+1. Redis 存储依赖外部服务可用；若 Redis 不可用，对话和报告接口将无法正常工作。
 2. 药物知识库虽已支持 MySQL，但初始化脚本当前导入的仍是代码内置药物数据，后续仍可继续扩展数据库内容。
 3. 药物知识库覆盖的是常见糖尿病相关药物，罕见药物和新上市药物可能未收录。
 4. 完整分析耗时受模型响应和工具调用轮次影响，通常比普通问答更慢。

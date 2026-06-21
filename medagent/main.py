@@ -11,6 +11,7 @@ from medagent.agents.intake import run_intake_chat
 from medagent.graph.workflow import run_analysis
 from medagent.models.drug_admin import DrugDeleteResponse, DrugPayload, DrugRecord
 from medagent.models.schemas import GraphState, MedicalReport, PatientData
+from medagent.storage.chat_session_repository import get_chat_session, save_chat_session
 from medagent.storage.drug_repository import (
     DrugConflictError,
     DrugNotFoundError,
@@ -20,12 +21,7 @@ from medagent.storage.drug_repository import (
     list_drugs,
     update_drug,
 )
-
-
-# ── In-memory stores ────────────────────────────────────────────────────────
-
-reports_store: dict[str, dict] = {}
-chat_sessions: dict[str, GraphState] = {}
+from medagent.storage.report_repository import get_report as get_report_by_id, save_report
 
 
 # ── App ─────────────────────────────────────────────────────────────────────
@@ -90,6 +86,15 @@ def _handle_drug_repo_error(exc: Exception) -> None:
     raise exc
 
 
+def _handle_redis_error(exc: Exception) -> None:
+    if isinstance(exc, RuntimeError):
+        raise HTTPException(
+            status_code=503,
+            detail="Redis不可用，请检查REDIS_URL配置与连接",
+        ) from exc
+    raise exc
+
+
 # ── Endpoints ───────────────────────────────────────────────────────────────
 
 
@@ -105,7 +110,10 @@ def analyze(req: AnalyzeRequest):
     )
 
     report_id = str(uuid.uuid4())[:8]
-    reports_store[report_id] = result
+    try:
+        save_report(report_id, result)
+    except Exception as exc:  # pragma: no cover - thin HTTP mapping
+        _handle_redis_error(exc)
 
     if result.get("error") and not result.get("final_report"):
         return AnalyzeResponse(
@@ -127,19 +135,27 @@ def chat(req: ChatRequest):
     """对话模式: 逐步采集患者信息"""
     session_id = req.session_id or str(uuid.uuid4())[:8]
 
-    if session_id not in chat_sessions:
+    try:
+        state = get_chat_session(session_id)
+    except Exception as exc:  # pragma: no cover - thin HTTP mapping
+        _handle_redis_error(exc)
+
+    if state is None:
         state = GraphState(conversation_mode=True)
-        chat_sessions[session_id] = state
-    else:
-        state = chat_sessions[session_id]
 
     state, reply = run_intake_chat(state, req.message)
-    chat_sessions[session_id] = state
+    try:
+        save_chat_session(session_id, state)
+    except Exception as exc:  # pragma: no cover - thin HTTP mapping
+        _handle_redis_error(exc)
 
     if state.intake_valid and state.patient_data:
         result = run_analysis(patient_data_dict=state.patient_data.model_dump())
         report_id = str(uuid.uuid4())[:8]
-        reports_store[report_id] = result
+        try:
+            save_report(report_id, result)
+        except Exception as exc:  # pragma: no cover - thin HTTP mapping
+            _handle_redis_error(exc)
 
         return ChatResponse(
             session_id=session_id,
@@ -159,9 +175,14 @@ def chat(req: ChatRequest):
 @app.get("/api/report/{report_id}")
 def get_report(report_id: str):
     """获取已生成的报告"""
-    if report_id not in reports_store:
+    try:
+        report = get_report_by_id(report_id)
+    except Exception as exc:  # pragma: no cover - thin HTTP mapping
+        _handle_redis_error(exc)
+
+    if report is None:
         raise HTTPException(404, "报告不存在")
-    return reports_store[report_id]
+    return report
 
 
 @app.get("/api/schema")

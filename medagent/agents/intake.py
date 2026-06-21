@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
 from medagent.config import get_llm
 from medagent.models.schemas import GraphState, PatientData
@@ -65,6 +65,64 @@ def validate_required_fields(data: dict) -> list[str]:
         if val is None or (isinstance(val, str) and val.strip() == ""):
             missing.append(path)
     return missing
+
+
+def _extract_json_block(content: str) -> dict:
+    text = content.strip()
+    if "```json" in text:
+        text = text.split("```json", 1)[1].split("```", 1)[0]
+    elif "```" in text:
+        text = text.split("```", 1)[1].split("```", 1)[0]
+    return json.loads(text.strip())
+
+
+def _extract_patient_data_dict_from_chat(state: GraphState) -> dict | None:
+    """Extract a schema-shaped PatientData dict from full chat history.
+
+    This is intentionally separate from the conversational reply so that
+    report generation no longer depends on the assistant spontaneously
+    returning a JSON block in normal dialogue.
+    """
+    if not state.chat_history:
+        return None
+
+    llm = get_llm()
+    schema_json = json.dumps(PatientData.model_json_schema(), ensure_ascii=False, indent=2)
+    required_json = json.dumps(REQUIRED_FIELD_PATHS, ensure_ascii=False, indent=2)
+    transcript_lines = []
+    for msg in state.chat_history:
+        role = "用户" if msg["role"] == "user" else "助手"
+        transcript_lines.append(f"{role}: {msg['content']}")
+    transcript = "\n".join(transcript_lines)
+
+    extraction_prompt = (
+        "请根据以下完整对话，提取为严格符合 PatientData 结构的 JSON。\n"
+        "要求：\n"
+        "1. 顶层字段名必须与 PatientData schema 完全一致，不允许自定义字段名。\n"
+        "2. 对于未知字段，保留字段但填 null；不要凭空猜测。\n"
+        "3. 对于文本型必填字段，如果对话中没有明确信息，填空字符串。\n"
+        "4. 对于数值型必填字段，如果对话中没有明确信息，填 null。\n"
+        "5. 只输出 JSON，不要输出解释。\n\n"
+        f"PatientData JSON Schema:\n{schema_json}\n\n"
+        f"系统必填字段路径:\n{required_json}\n\n"
+        f"完整对话:\n{transcript}"
+    )
+
+    messages = [
+        SystemMessage(
+            content=(
+                "你是糖尿病病例结构化抽取器。"
+                "你的唯一任务是把对话内容映射为 PatientData JSON。"
+            )
+        ),
+        HumanMessage(content=extraction_prompt),
+    ]
+
+    response = llm.invoke(messages)
+    try:
+        return _extract_json_block(response.content)
+    except Exception:
+        return None
 
 
 def run_intake_agent(state: GraphState) -> GraphState:
@@ -147,7 +205,6 @@ def run_intake_chat(state: GraphState, user_message: str) -> tuple[GraphState, s
         if msg["role"] == "user":
             messages.append(HumanMessage(content=msg["content"]))
         else:
-            from langchain_core.messages import AIMessage
             messages.append(AIMessage(content=msg["content"]))
 
     if state.missing_fields:
@@ -159,19 +216,19 @@ def run_intake_chat(state: GraphState, user_message: str) -> tuple[GraphState, s
 
     state.chat_history.append({"role": "assistant", "content": assistant_reply})
 
-    if "```json" in assistant_reply:
-        try:
-            json_str = assistant_reply.split("```json")[1].split("```")[0]
-            raw_dict = json.loads(json_str.strip())
-            patient = PatientData(**raw_dict)
-            state.patient_data = patient
-            data_dict = patient.model_dump()
-            missing = validate_required_fields(data_dict)
-            state.intake_valid = len(missing) == 0
-            state.missing_fields = missing
-            if state.intake_valid:
+    extracted = _extract_patient_data_dict_from_chat(state)
+    if extracted is not None:
+        missing = validate_required_fields(extracted)
+        state.missing_fields = missing
+        state.intake_valid = len(missing) == 0
+        if state.intake_valid:
+            try:
+                patient = PatientData(**extracted)
                 patient.compute_derived_fields()
-        except Exception:
-            pass
+                state.patient_data = patient
+            except Exception:
+                state.intake_valid = False
+        else:
+            state.patient_data = None
 
     return state, assistant_reply
