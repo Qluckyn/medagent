@@ -1,0 +1,110 @@
+{
+    "patient_name": "张三",
+    "age": 55,
+    "gender": "男",
+    "core_symptoms": {
+        "triad_symptoms": {
+            "polyuria": "近3个月出现多尿，白天排尿8-10次，夜间起夜3-4次",
+            "polydipsia": "近2个月明显口渴，每日饮水量超过3升",
+            "polyphagia": "近1个月食量增加约30%，仍有饥饿感",
+            "weight_loss": "近1个月体重下降约3kg",
+            "progression": "近3个月逐渐加重，近1个月明显"
+        },
+        "other_symptoms": "偶有乏力，无明显视力模糊",
+        "hypoglycemia_reaction": "偶有餐前心慌、手抖，进食后缓解，约每月1-2次"
+    },
+    "medical_history": {
+        "visit_reason": "体检发现空腹血糖偏高2年，近期出现三多一少症状就诊",
+        "prior_glucose_history": "2年前体检发现空腹血糖6.8mmol/L，未予重视。1年前复查7.2mmol/L，开始口服二甲双胍500mg tid，服药1年。近3个月自测血糖升高至8-10mmol/L",
+        "steroid_diuretic_use": "否，未使用过糖皮质激素、噻嗪类利尿剂或抗精神病药物"
+    },
+    "past_history": {
+        "diagnosed_diseases": "高血压10年，服用氨氯地平5mg qd，血压控制尚可。血脂异常3年。无冠心病、脑血管病、甲亢、脂肪肝等",
+        "current_medications": "二甲双胍500mg tid，氨氯地平5mg qd，阿托伐他汀20mg qn",
+        "allergy_history": "无药物过敏史，对磺胺类、二甲双胍、胰岛素均无过敏"
+    },
+    "physical_exam": {
+        "height_cm": 172.0,
+        "weight_kg": 78.0,
+        "waist_cm": 92.0,
+        "hip_cm": 98.0,
+        "systolic_bp": 142.0,
+        "diastolic_bp": 88.0,
+        "pulse_rate": 78.0,
+        "skin_findings": "颈部可见轻度黑棘皮症，无皮肤感染或溃疡",
+        "eye_exam": "裸眼视力左4.8右4.9，眼底镜检查未见明显微血管瘤",
+        "foot_exam": "双足皮肤干燥，足背动脉搏动可触及。10g尼龙丝检查：双足拇趾感觉正常，128Hz音叉振动觉正常"
+    },
+    "clinical_tests": {
+        "blood_sugar": {
+            "fasting_glucose": 8.5,
+            "postprandial_2h_glucose": 13.2,
+            "hba1c": 8.2,
+            "morning_pre_meal": 8.1,
+            "morning_post_meal": 12.5,
+            "lunch_post_meal": 11.8,
+            "dinner_post_meal": 13.2,
+            "bedtime_glucose": 9.5,
+            "hypoglycemia_frequency": "约每月1-2次，多发生在午餐前，与早餐进食量少有关。未发生夜间低血糖",
+            "medication_glucose_response": "二甲双胍1500mg/日使用1年，初期空腹血糖可控制在7.0左右，近3个月血糖逐渐升高，提示单药控制不佳"
+        },
+        "insulin": {
+            "fasting_insulin": 15.2,
+            "fasting_c_peptide": 2.1,
+            "postprandial_1h_insulin": 45.0,
+            "postprandial_1h_c_peptide": 5.8,
+            "postprandial_2h_insulin": 68.0,
+            "postprandial_2h_c_peptide": 7.2
+        },
+        "metabolic": {
+            "total_cholesterol": 5.8,
+            "triglycerides": 2.3,
+            "ldl_cholesterol": 3.5,
+            "hdl_cholesterol": 1.0,
+            "alt": 45.0,
+            "ast": 32.0,
+            "creatinine": 78.0,
+            "egfr": 92.0,
+            "uric_acid": 420.0,
+            "raw_text": "TC 5.8, TG 2.3, LDL-C 3.5, HDL-C 1.0, ALT 45, AST 32, Cr 78, eGFR 92, UA 420"
+        },
+        "urine": {
+            "urinalysis": "尿糖2+，尿蛋白阴性，尿酮体阴性",
+            "uacr": 25.0,
+            "uacr_text": "UACR 25mg/g，正常范围"
+        },
+        "antibody": {
+            "gad_antibody": "阴性",
+            "ia2_antibody": "阴性"
+        },
+        "ecg": "窦性心律，心率78次/分，未见ST-T改变",
+        "fundus_exam": "双眼底未见明显微血管瘤、出血或渗出"
+    },
+    "medications": {
+        "oral_medications": "1. 二甲双胍缓释片500mg tid（已用1年，未调整）2. 氨氯地平5mg qd（已用10年）3. 阿托伐他汀20mg qn（已用3年）",
+        "insulin_therapy": "目前未使用胰岛素",
+        "glp1_therapy": "目前未使用GLP-1针剂",
+        "other_medications": "无其他药物"
+    },
+    "lifestyle": {
+        "diet_staple": "以精米白面为主，每餐约2碗米饭（约200g），早餐馒头+粥，不吃夜宵",
+        "diet_sugar": "偶尔喝含糖饮料，约每周1-2次奶茶",
+        "diet_other": "蔬菜摄入偏少，每日约200g；水果每日1个苹果；猪肉为主，偏油腻",
+        "diet_regularity": "三餐基本规律，但午餐时间不固定（12:00-14:00），无暴饮暴食或节食史",
+        "exercise_type": "办公室久坐工作",
+        "exercise_leisure": "每周散步2-3次，每次约30分钟，无抗阻运动",
+        "sedentary_time": "每日久坐约8-10小时",
+        "sleep": "入睡时间约23:00，睡眠时长6-7小时，家属反映有打鼾",
+        "smoking_drinking": "吸烟20年，每日约10支；饮酒约每周2次，每次白酒2-3两"
+    },
+    "family_history": {
+        "diabetes_in_relatives": "母亲患2型糖尿病15年，父亲无糖尿病",
+        "other_family_diseases": "父亲高血压，母亲高血压+糖尿病，无家族性冠心病或肥胖"
+    },
+    "psychosocial": {
+        "occupation_education": "公司职员，大专学历，有职工医保",
+        "family_support": "妻子可协助监督用药和饮食",
+        "mental_health": "近期因血糖控制不佳有轻度焦虑，PHQ-2评分1分",
+        "health_literacy": "会使用血糖仪，但对药物调整知识不足"
+    }
+}

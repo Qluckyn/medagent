@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedAgent 糖尿病诊疗系统 - 演示报告</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:#f0f2f5; color:#1a1a1a; line-height:1.7; padding:20px; }
+  .page { max-width:960px; margin:0 auto; }
+  .header { background:linear-gradient(135deg,#1e5799 0%,#2989d8 100%); color:#fff; padding:36px 40px; border-radius:14px; margin-bottom:20px; box-shadow:0 4px 20px rgba(0,0,0,.1); }
+  .header h1 { font-size:28px; margin-bottom:8px; }
+  .header .sub { font-size:15px; opacity:.9; }
+  .header .badge { display:inline-block; background:rgba(255,255,255,.2); padding:4px 12px; border-radius:20px; font-size:13px; margin-top:12px; margin-right:8px; }
+  .card { background:#fff; border-radius:14px; padding:28px 32px; margin-bottom:18px; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+  .card h2 { font-size:20px; color:#1e5799; border-bottom:2px solid #e8eef5; padding-bottom:12px; margin-bottom:20px; display:flex; align-items:center; }
+  .card h2 .icon { width:32px; height:32px; background:#2989d8; color:#fff; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; margin-right:12px; font-size:16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:8px; }
+  .metric { background:#f7f9fc; border-radius:10px; padding:16px; text-align:center; border:1px solid #e8eef5; }
+  .metric .label { font-size:13px; color:#666; margin-bottom:6px; }
+  .metric .value { font-size:24px; font-weight:700; color:#1e5799; }
+  .metric .unit { font-size:13px; color:#999; font-weight:400; }
+  .metric.warn .value { color:#e67e22; }
+  .metric.danger .value { color:#e74c3c; }
+  .metric.ok .value { color:#27ae60; }
+  .diagnosis-tag { display:inline-block; background:#e74c3c; color:#fff; font-size:22px; font-weight:700; padding:10px 28px; border-radius:30px; margin-bottom:16px; }
+  .section-block { margin-bottom:18px; }
+  .section-block h3 { font-size:15px; color:#2989d8; margin-bottom:6px; font-weight:600; }
+  .section-block p { font-size:14.5px; color:#333; text-align:justify; }
+  .tx-item { background:#f7fbf7; border-left:4px solid #27ae60; padding:14px 18px; margin-bottom:12px; border-radius:0 8px 8px 0; }
+  .tx-item h3 { font-size:15px; color:#1e7e34; margin-bottom:6px; }
+  .tx-item p { font-size:14px; color:#333; }
+  .flow { display:flex; flex-wrap:wrap; align-items:center; gap:8px; justify-content:center; padding:10px 0; }
+  .flow .node { background:#2989d8; color:#fff; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; }
+  .flow .node.parallel { background:#8e44ad; }
+  .flow .arrow { color:#999; font-size:18px; }
+  .tool-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; }
+  .tool-chip { background:#fff4e6; border:1px solid #ffd8a8; border-radius:8px; padding:10px 14px; font-size:13px; }
+  .tool-chip b { color:#e67e22; font-size:18px; }
+  .highlight { background:#fff3cd; padding:2px 6px; border-radius:4px; font-weight:600; }
+  .footer { text-align:center; color:#999; font-size:13px; padding:20px; }
+  .disclaimer { background:#fff8e1; border:1px solid #ffe082; border-radius:10px; padding:14px 18px; font-size:13px; color:#795548; margin-top:18px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th,td { padding:10px 12px; text-align:left; border-bottom:1px solid #eee; }
+  th { background:#f7f9fc; color:#1e5799; font-weight:600; }
+  .check { color:#27ae60; font-weight:700; }
+  @media print { body { background:#fff; } .card { box-shadow:none; border:1px solid #ddd; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>🏥 MedAgent 糖尿病诊疗智能Agent系统</h1>
+    <div class="sub">多Agent协作 · 工具增强 · 全流程自动化诊疗辅助</div>
+    <div>
+      <span class="badge">7个专科Agent</span>
+      <span class="badge">31次工具调用</span>
+      <span class="badge">20项必输出全覆盖</span>
+      <span class="badge">GPT-4.1驱动</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">📋</span>患者概况</h2>
+    <p style="margin-bottom:16px;"><b>张三</b>，55岁男 ｜ 主诉：多饮多尿3月，发现血糖升高2年 ｜ 现用药：二甲双胍 + 氨氯地平 + 阿托伐他汀</p>
+    <div class="grid">
+      <div class="metric danger"><div class="label">空腹血糖</div><div class="value">8.5<span class="unit"> mmol/L</span></div></div>
+      <div class="metric danger"><div class="label">HbA1c</div><div class="value">8.2<span class="unit"> %</span></div></div>
+      <div class="metric warn"><div class="label">空腹胰岛素</div><div class="value">15.2<span class="unit"> μU/mL</span></div></div>
+      <div class="metric"><div class="label">空腹C肽</div><div class="value">2.1<span class="unit"> ng/mL</span></div></div>
+      <div class="metric warn"><div class="label">血压</div><div class="value">142/88</div></div>
+      <div class="metric warn"><div class="label">BMI</div><div class="value">26.4</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">⚙️</span>系统处理流程</h2>
+    <div class="flow">
+      <span class="node">信息采集校验</span>
+      <span class="arrow">→</span>
+      <span class="node parallel">诊断</span>
+      <span class="node parallel">血糖</span>
+      <span class="node parallel">胰岛素</span>
+      <span class="arrow">→</span>
+      <span class="node">并发症</span>
+      <span class="arrow">→</span>
+      <span class="node">治疗方案</span>
+      <span class="arrow">→</span>
+      <span class="node">报告生成</span>
+    </div>
+    <p style="text-align:center; color:#999; font-size:13px; margin-top:10px;">紫色节点为并行执行 ｜ 全程调用确定性工具进行精确计算与禁忌核查</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">🔬</span>诊断评估</h2>
+    <div class="diagnosis-tag">2型糖尿病</div>
+    <div class="section-block">
+      <h3>分型依据</h3>
+      <p>患者55岁男性，中年起病，肥胖（BMI 26.4，腰围92cm，腰臀比0.94），有2型糖尿病家族史（母亲），GAD/IA-2抗体阴性，C肽水平正常且分泌反应良好（空腹2.1，餐后2h 7.2），无酮症倾向，起病缓慢，存在明显胰岛素抵抗表现（黑棘皮症、高胰岛素血症）。既往无胰岛素依赖，初期二甲双胍有效，后期血糖控制不佳。无特殊药物使用史，无妊娠相关因素。综合上述，符合2型糖尿病诊断。</p>
+    </div>
+    <div class="section-block">
+      <h3>慢性病情</h3>
+      <p>病程2年以上，血糖控制不佳（HbA1c 8.2%，多次空腹及餐后血糖超标），单用二甲双胍已不能达标，提示胰岛β细胞功能进一步减退。存在高血压、血脂异常等多重心血管危险因素。尚无糖尿病微血管并发症（眼底、足部、尿微量白蛋白均正常），无明显大血管并发症。代谢综合征表现明显（肥胖、黑棘皮症、高TG、低HDL）。生活方式不良（久坐、运动少、饮食偏油腻、吸烟饮酒）。需强化综合管理（药物调整、生活方式干预、并发症筛查）。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">🩸</span>血糖水平评估 <span style="font-size:13px;color:#999;font-weight:400;margin-left:auto;">由 calc_tir 工具精确计算</span></h2>
+    <div class="grid">
+      <div class="metric danger"><div class="label">TIR 达标时间</div><div class="value">42.9<span class="unit"> %</span></div></div>
+      <div class="metric danger"><div class="label">TAR 高血糖时间</div><div class="value">57.1<span class="unit"> %</span></div></div>
+      <div class="metric ok"><div class="label">TBR 低血糖时间</div><div class="value">0.0<span class="unit"> %</span></div></div>
+    </div>
+    <div class="section-block" style="margin-top:16px;">
+      <h3>HbA1c 评估与预测</h3>
+      <p>HbA1c为8.2%，高于宽松目标(<8.0%)，提示平均血糖控制不达标，长期高血糖风险增加。 如不调整治疗方案，预计未来3个月HbA1c仍将维持或进一步升高。建议考虑联合其他降糖药物（如GLP-1受体激动剂、SGLT2抑制剂或胰岛素），加强餐后血糖控制，合理调整饮食，预计HbA1c可降至目标范围。</p>
+    </div>
+    <div class="section-block">
+      <h3>血糖波动</h3>
+      <p>日内波动较大（最高13.2，最低8.1，差值5.1mmol/L>4.4mmol/L），提示血糖波动明显。午餐前偶有低血糖（每月1-2次），与早餐进食量少有关。未发生夜间低血糖。无明显Somogyi效应或黎明现象。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">💉</span>胰岛素分泌功能 <span style="font-size:13px;color:#999;font-weight:400;margin-left:auto;">由 calc_homa_ir / calc_homa_beta 计算</span></h2>
+    <div class="grid">
+      <div class="metric danger"><div class="label">HOMA-IR 胰岛素抵抗</div><div class="value">5.74</div></div>
+      <div class="metric warn"><div class="label">HOMA-β 细胞功能</div><div class="value">60.8</div></div>
+    </div>
+    <div class="section-block" style="margin-top:16px;">
+      <h3>分泌曲线分析</h3>
+      <p>胰岛素分泌曲线表现为：空腹及餐后胰岛素均升高，HOMA-IR显著升高，存在胰岛素抵抗；同时，餐后胰岛素分泌峰值延迟，第一时相分泌减弱，β细胞功能减退。整体为胰岛素抵抗合并分泌延迟的混合型胰岛功能异常。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">⚠️</span>并发症与合并症评估</h2>
+    <div class="section-block">
+      <h3>微血管并发症</h3>
+      <p>1. 糖尿病肾病(DKD): eGFR按CKD-EPI公式重新计算为96.6 mL/min/1.73m²（原录入92），以工具计算值为准。UACR 25 mg/g，分期为G1A1（肾功能正常，尿白蛋白正常），综合风险低，建议每年复查。2. 糖尿病视网膜病变(DR): 眼底镜检查无微血管瘤、出血或渗出，分级为无DR，建议每年复查。3. 糖尿病周围神经病变(DPN): 10g尼龙丝和128Hz音叉检查均正常，无感觉、运动或自主神经异常表现，未见DPN证据。</p>
+    </div>
+    <div class="section-block">
+      <h3>指标异常分析</h3>
+      <p>1. 空腹血糖8.5 mmol/L、HbA1c 8.2%，均明显升高，提示血糖控制不佳。2. 总胆固醇5.8 mmol/L、LDL-C 3.5 mmol/L边缘升高，甘油三酯2.3 mmol/L升高，HDL-C 1.0 mmol/L偏低，提示动脉粥样硬化风险增高。3. ALT 45 U/L轻度升高，AST正常，考虑脂肪肝或药物性肝损伤可能。4. 肌酐78 μmol/L、eGFR 96.6正常，尿酸420 μmol/L正常。5. UACR 25 mg/g正常，无微量白蛋白尿。6. 尿常规无酮体、无蛋白，酮症及肾损伤风险低。</p>
+    </div>
+    <div class="section-block">
+      <h3>体格检查异常</h3>
+      <p>1. 血压142/88 mmHg，属于高血压1级，未达糖尿病患者血压目标(<130/80 mmHg)。2. BMI 26.4，属超重。3. 腰围92cm，腰臀比0.94，存在中心性肥胖。4. 皮肤有轻度黑棘皮症，提示胰岛素抵抗。5. 足部皮肤干燥，无溃疡、无感染，足背动脉搏动正常。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">💊</span>治疗建议</h2>
+    <div class="tx-item">
+      <h3>降糖治疗方案</h3>
+      <p>1. 二甲双胍继续使用（500mg tid），未发现禁忌症。2. 联合达格列净10mg qd（SGLT2抑制剂），有心肾保护、减重作用，适合合并高血压、肥胖患者。3. 若餐后血糖仍不达标，可加用阿卡波糖50mg tid，逐渐增至100mg tid，随餐嚼服。4. 若体重控制不理想或HbA1c>8.5%，可考虑GLP-1RA（利拉鲁肽0.6mg起始，1-2周增至1.2mg qd，最大1.8mg qd），注射给药，显著减重。5. 磺脲类（格列吡嗪）可作为经济敏感患者备选，但低血糖风险高，建议慎用。6. 目前胰岛素功能尚可，无需胰岛素治疗。药物间无明显相互作用，安全性良好。血糖目标：空腹<8.0mmol/L，餐后2h<12.0mmol/L，HbA1c<8.0%，避免低血糖。</p>
+    </div>
+    <div class="tx-item">
+      <h3>药物禁忌症核查（工具自动核对）</h3>
+      <p>工具核查结果：二甲双胍、达格列净、利拉鲁肽、格列吡嗪、阿卡波糖均无禁忌症（肾功能、肝功能、过敏、妊娠、心衰、胰腺炎等均未见异常），可安全使用。药物间无明显相互作用。磺脲类（格列吡嗪）低血糖风险高，老年人慎用。GLP-1RA（利拉鲁肽）无甲状腺髓样癌/MEN2家族史，安全。SGLT2i（达格列净）eGFR>90，肾功能良好。阿卡波糖肝酶轻度升高，需监测肝功。无药物过敏史。</p>
+    </div>
+    <div class="tx-item">
+      <h3>并发症与合并症治疗</h3>
+      <p>1. 高血压：继续氨氯地平5mg qd，建议联合ACEI/ARB（如缬沙坦80mg qd），目标血压<130/80mmHg。2. 血脂异常：继续阿托伐他汀20mg qn，LDL-C目标<1.8mmol/L，TG>2.3mmol/L建议加强生活方式干预。3. 糖尿病肾病：eGFR正常，UACR正常，建议每年复查。4. 视网膜病变：无DR，建议每年眼底检查。5. 神经病变：未见DPN表现，无需特殊药物。6. 高尿酸：UA420μmol/L，正常，无需降尿酸药物。7. 肝功能：ALT轻度升高，建议减少油腻饮食，定期复查肝功。</p>
+    </div>
+    <div class="tx-item">
+      <h3>生活方式干预</h3>
+      <p>1. 饮食：建议主食粗细搭配，减少精米白面，控制碳水摄入（每日主食总量约250-300g），蔬菜≥500g/日，水果适量（低GI），减少油腻、戒含糖饮料。2. 运动：每周≥150分钟中等强度有氧运动（快走、游泳），每周2-3次抗阻训练（哑铃、弹力带），减少久坐。3. 体重管理：3-6个月减重目标5-10%，BMI降至<24，腰围<90cm。4. 戒烟限酒：建议完全戒烟，饮酒限量（白酒≤50ml/次，≤2次/周），最佳为戒酒。5. 睡眠：建议规律作息，改善睡眠质量，必要时评估睡眠呼吸暂停。</p>
+    </div>
+    <div class="tx-item">
+      <h3>随诊计划</h3>
+      <p>1. 新联合调药期，建议2-4周后复查血糖（空腹、餐后、HbA1c）、肝肾功能、血脂、尿微量白蛋白。2. 血压每周自测，门诊每月复查。3. 眼底检查、足部检查每年一次。4. 若GLP-1RA使用，初期每周监测胃肠道反应。5. 稳定期每3个月随访。6. 需转诊：眼科（眼底筛查）、肾内科（肾功能异常时）、营养科（个体化饮食指导）。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">🔧</span>工具调用统计 — 系统可靠性的保障</h2>
+    <p style="margin-bottom:16px; color:#555;">本次分析共调用 <span class="highlight">31次确定性工具</span>，所有关键计算和药物核查均由代码完成，<b>不依赖大模型估算</b>，结果可复现、可追溯。</p>
+    <div class="tool-stats">
+      <div class="tool-chip"><b>11</b>次<br>化验值判读</div>
+      <div class="tool-chip"><b>5</b>次<br>药物禁忌核查</div>
+      <div class="tool-chip"><b>4</b>次<br>药物信息查询</div>
+      <div class="tool-chip"><b>2</b>次<br>血糖目标确认</div>
+      <div class="tool-chip"><b>1</b>次<br>HOMA-IR计算</div>
+      <div class="tool-chip"><b>1</b>次<br>eGFR计算</div>
+      <div class="tool-chip"><b>1</b>次<br>CKD分期</div>
+      <div class="tool-chip"><b>1</b>次<br>TIR计算</div>
+    </div>
+    <table style="margin-top:20px;">
+      <tr><th>能力维度</th><th>纯大模型方案</th><th>MedAgent（工具增强）</th></tr>
+      <tr><td>HOMA-IR / eGFR / TIR</td><td>模型心算，可能出错</td><td class="check">✓ 代码精确计算</td></tr>
+      <tr><td>药物禁忌症</td><td>依赖模型记忆</td><td class="check">✓ 结构化数据库逐项核对</td></tr>
+      <tr><td>化验值判读</td><td>参考范围易记错</td><td class="check">✓ 按性别年龄查表</td></tr>
+      <tr><td>数据冲突处理</td><td>无法识别</td><td class="check">✓ eGFR自动以计算值为准</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">✅</span>输出完整性校验</h2>
+    <table>
+      <tr><th>必输出模块</th><th>状态</th><th>必输出模块</th><th>状态</th></tr>
+      <tr><td>糖尿病分型</td><td class="check">✓</td><td>降糖治疗方案</td><td class="check">✓</td></tr>
+      <tr><td>急/慢性病情</td><td class="check">✓</td><td>并发症治疗</td><td class="check">✓</td></tr>
+      <tr><td>血糖评估(TIR等)</td><td class="check">✓</td><td>药物禁忌分析</td><td class="check">✓</td></tr>
+      <tr><td>胰岛素功能</td><td class="check">✓</td><td>随诊计划</td><td class="check">✓</td></tr>
+      <tr><td>并发症评估</td><td class="check">✓</td><td>生活方式干预</td><td class="check">✓</td></tr>
+      <tr><td>指标异常分析</td><td class="check">✓</td><td>自我管理建议</td><td class="check">✓</td></tr>
+    </table>
+    <p style="text-align:center; margin-top:16px; font-size:16px; color:#27ae60; font-weight:700;">20 / 20 项必输出字段全部完整 ✓</p>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ <b>免责声明</b>：本系统为临床辅助决策工具，所有输出仅供医疗专业人员参考，需由执业医师复核，不构成诊疗依据，不能替代医生诊断。
+  </div>
+
+  <div class="footer">
+    MedAgent · 基于 LangGraph 多Agent架构 · 演示病例数据 · 生成耗时约 140 秒
+  </div>
+
+</div>
+</body>
+</html>
